@@ -1,0 +1,66 @@
+{
+	"name": "SourceDataset_399",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "migration_table_202201.csv",
+				"container": "sourceblob"
+			},
+			"columnDelimiter": ",",
+			"rowDelimiter": "\n",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "segments",
+				"type": "String"
+			},
+			{
+				"name": "consistent customers",
+				"type": "String"
+			},
+			{
+				"name": "one-off birds",
+				"type": "String"
+			},
+			{
+				"name": "commercial carriers",
+				"type": "String"
+			},
+			{
+				"name": "premium purchasers",
+				"type": "String"
+			},
+			{
+				"name": "promising punters",
+				"type": "String"
+			},
+			{
+				"name": "cash cows",
+				"type": "String"
+			},
+			{
+				"name": "petronas patrons",
+				"type": "String"
+			},
+			{
+				"name": "month_year_id",
+				"type": "String"
+			},
+			{
+				"name": "lapsed_proportion",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
