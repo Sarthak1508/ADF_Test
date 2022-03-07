@@ -1,0 +1,46 @@
+create or replace procedure TRADE_AREA(LIMIT_V VARCHAR(10),OFFSET_V VARCHAR(10))
+  returns String not null
+  language javascript
+  as     
+  $$  
+   
+   var Insert_records = "Insert Into TradeArea (CVEGEO ,VIVTOT ,TVIVHAB ,P_TVIVHAB ,TVIVPAR ,P_TVIVPAR ,TVIVPARHAB ,PVIVPARHAB ,VIVPAR_DES ,P_VIVPAR_D ,VIVPAR_UT ,P_VIVPAR_U ,VIVNOHAB ,P_VIVNOHAB ,PROOCUP_C ,POBTOT ,P0A14A ,PP0A14A ,P15A29A ,PP15A29A ,P30A59A ,PP30A59A ,P_60YMAS ,PP_60YMAS ,GENZ ,MILLENIAL ,GENX ,BABY_BOOMER,A_B ,C_PLUS ,C ,C_MINUS ,D_PLUS ,D ,E ,F_POB , M_POB ,PCON_LIM ,PPCON_LIM ,GRAPROES ,ENT ,MUN  ,LOC  ,AGEB ,MZA,AMBITO,FECHA_POLI,FECHA_INF ,FECHA_CEU,OID ,GEOMETRY,ID_CLIENTE,DES_CLIENTE ,FORMAT  ) ";
+   
+    var my_sql_command = "select ID_CLIENTE,DES_CLIENTE,DES_EDO,LAT,LONG,FORMAT from DP_SDNA_MX.SDNA_MX_DEV.MX_STORES order by ID_CLIENTE asc limit " + LIMIT_V +  " offset " +  OFFSET_V ;
+    var statement1 = snowflake.createStatement( {sqlText: my_sql_command} );
+    var result_set1 = statement1.execute();
+    while (result_set1.next())  {
+       var ID_CLIENTE = result_set1.getColumnValue("ID_CLIENTE");
+       var DES_CLIENTE = result_set1.getColumnValue("DES_CLIENTE");
+       var DES_EDO = result_set1.getColumnValue("DES_EDO");
+       var LAT = result_set1.getColumnValue("LAT");
+       var LONG = result_set1.getColumnValue("LONG");
+       var FORMAT = result_set1.getColumnValue("FORMAT");
+       
+       var query_inegi = "select CVEGEO ,VIVTOT ,TVIVHAB ,P_TVIVHAB ,TVIVPAR ,P_TVIVPAR ,TVIVPARHAB ,PVIVPARHAB ,VIVPAR_DES ,P_VIVPAR_D ,VIVPAR_UT ,P_VIVPAR_U ,VIVNOHAB ,P_VIVNOHAB ,PROOCUP_C ,POBTOT ,P0A14A ,PP0A14A ,P15A29A ,PP15A29A ,P30A59A ,PP30A59A ,P_60YMAS ,PP_60YMAS ,GENZ ,MILLENIAL ,GENX ,BABY_BOOMER,A_B ,C_PLUS ,C ,C_MINUS ,D_PLUS ,D ,E ,F_POB , M_POB ,PCON_LIM ,PPCON_LIM ,GRAPROES ,ENT ,MUN  ,LOC  ,AGEB ,MZA,AMBITO,FECHA_POLI,FECHA_INF ,FECHA_CEU,OID ,GEOMETRY, " + ID_CLIENTE + " as ID_CLIENTE , '" + DES_CLIENTE + "' as DES_CLIENTE, '" + FORMAT + "' as FORMAT from DP_SDNA_MX.SDNA_MX_DEV.INEGI_3 ";
+            
+       if (DES_EDO == "DISTRITO FEDERAL" ||  DES_EDO == "DISTITO FEDERAL" ||  DES_EDO == "D.F." ||  DES_EDO == "D. F." ||  DES_EDO == "D  F" ||  DES_EDO == "D F"){ 
+          query_inegi = query_inegi + "where st_dwithin (to_geography(st_makepoint( " + LONG + "," + LAT + ")),GEOMETRY ,iff(FORMAT = 'SF', 1000, 2000)) = True "
+       }
+       else{
+          if(FORMAT == "SF"){
+          query_inegi = query_inegi + "where st_dwithin (to_geography(st_makepoint( " + LONG + "," + LAT + ")),GEOMETRY ,iff(AMBITO = 'U', 2000, 4000)) = True "
+          }
+          else if (FORMAT == "LF"){
+          query_inegi = query_inegi + "where st_dwithin (to_geography(st_makepoint( " + LONG + "," + LAT + ")),GEOMETRY ,iff(AMBITO = 'U', 4000, 10000)) = True "
+          } 
+          
+       }     
+       Insert_records = Insert_records + query_inegi + " union all ";
+
+       }
+       Insert_records = Insert_records.substring(0, Insert_records.length - 10);
+       var insert_st = snowflake.createStatement( {sqlText: Insert_records} );
+       insert_st.execute();
+  
+  return "Success"; 
+  $$
+  ;
+
+
+  Call TRADE_AREA(1000,3000);
